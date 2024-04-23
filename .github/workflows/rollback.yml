@@ -1,10 +1,10 @@
 name: Rollback
 
 on:
-  workflow_dispatch: # è“®ƒgƒŠƒK[
+  workflow_dispatch: # æ‰‹å‹•ãƒˆãƒªã‚¬ãƒ¼
     inputs:
       target_tag:
-        description: 'ƒ^[ƒQƒbƒg‚Æ‚È‚éƒ^ƒO–¼'
+        description: 'ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã¨ãªã‚‹ã‚¿ã‚°å'
         required: true
 
 jobs:
@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       
       - name: Get commit hash of target tag
         run: |
