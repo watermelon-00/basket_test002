@@ -25,14 +25,14 @@ jobs:
             echo "Commit hash of ${{ github.event.inputs.target_tag }} tag: $COMMIT_TARGET"
           fi
       
-      - name: Get commit hash of env/stg branch
+      - name: Get commit hash of environment branch
         run: |
           if [ -z "$IS_PROD_ENV" ]; then
-            COMMIT_ENV_STG=$(git show --pretty=format:%H --no-patch env/stg)
-            echo "Commit hash of env/stg branch: $COMMIT_ENV_STG"
+            COMMIT_ENV=$(git show --pretty=format:%H --no-patch $ENV_BRANCH)
+            echo "Commit hash of $ENV_BRANCH branch: $COMMIT_ENV"
           else
-            COMMIT_ENV_STG=$(git show --pretty=format:%H --no-patch origin/env/stg)
-            echo "Commit hash of env/stg branch: $COMMIT_ENV_STG"
+            COMMIT_ENV=$(git show --pretty=format:%H --no-patch origin/$ENV_BRANCH)
+            echo "Commit hash of $ENV_BRANCH branch: $COMMIT_ENV"
           fi
       
       - name: Verify if commit hashes match
