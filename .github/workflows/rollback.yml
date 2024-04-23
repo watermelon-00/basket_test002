@@ -1,7 +1,7 @@
 name: Rollback
 
 on:
-  workflow_dispatch: # éËìÆÇ≈ÇÃÉgÉäÉKÅ[
+  workflow_dispatch: # ÊâãÂãï„Éà„É™„Ç¨„Éº
 
 jobs:
   rollback:
@@ -11,10 +11,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       
+      - name: Get commit hashes
+        run: |
+          COMMIT_STG_V2=$(git show --pretty=format:%H --no-patch stg-v2.0)
+          COMMIT_ENV_STG=$(git show --pretty=format:%H --no-patch env/stg)
+          echo "Commit hash of stg-v2.0: $COMMIT_STG_V2"
+          echo "Commit hash of env/stg: $COMMIT_ENV_STG"
+      
+      - name: Verify if commit hashes match
+        run: |
+          if [ "$COMMIT_STG_V2" != "$COMMIT_ENV_STG" ]; then
+            echo "Commit hashes of stg-v2.0 and env/stg do not match. Rollback aborted."
+            exit 1
+          else
+            echo "Commit hashes of stg-v2.0 and env/stg match."
+          fi
+
       - name: Get previous release tag
         run: |
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^)
           echo "Previous tag: $PREVIOUS_TAG"
+      
+      - name: Check if previous release tag exists
+        run: |
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "Previous release tag does not exist. Rollback aborted."
+            exit 1
+          else
+            echo "Previous release tag exists: $PREVIOUS_TAG"
+          fi
       
       - name: Rollback to previous release
         run: |
