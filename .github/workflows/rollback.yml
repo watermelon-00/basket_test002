@@ -1,7 +1,11 @@
 name: Rollback
 
 on:
-  workflow_dispatch: # 手動でのトリガー
+  workflow_dispatch: # 手動トリガー
+    inputs:
+      target_tag:
+        description: 'ターゲットとなるタグ名'
+        required: true
 
 jobs:
   rollback:
@@ -11,13 +15,58 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       
+      - name: Get commit hash of target tag
+        run: |
+          if [ -z "$IS_PROD_ENV" ]; then
+            COMMIT_TARGET=$(git show --pretty=format:%H --no-patch ${{ github.event.inputs.target_tag }})
+            echo "Commit hash of ${{ github.event.inputs.target_tag }} tag: $COMMIT_TARGET"
+          else
+            COMMIT_TARGET=$(git show --pretty=format:%H --no-patch origin/${{ github.event.inputs.target_tag }})
+            echo "Commit hash of ${{ github.event.inputs.target_tag }} tag: $COMMIT_TARGET"
+          fi
+      
+      - name: Get commit hash of env/stg branch
+        run: |
+          if [ -z "$IS_PROD_ENV" ]; then
+            COMMIT_ENV_STG=$(git show --pretty=format:%H --no-patch env/stg)
+            echo "Commit hash of env/stg branch: $COMMIT_ENV_STG"
+          else
+            COMMIT_ENV_STG=$(git show --pretty=format:%H --no-patch origin/env/stg)
+            echo "Commit hash of env/stg branch: $COMMIT_ENV_STG"
+          fi
+      
+      - name: Verify if commit hashes match
+        run: |
+          if [ "$COMMIT_TARGET" != "$COMMIT_ENV_STG" ]; then
+            echo "Commit hashes of ${{ github.event.inputs.target_tag }} tag and env/stg branch do not match. Rollback aborted."
+            exit 1
+          else
+            echo "Commit hashes of ${{ github.event.inputs.target_tag }} tag and env/stg branch match."
+          fi
+
       - name: Get previous release tag
         run: |
-          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^)
-          echo "Previous tag: $PREVIOUS_TAG"
+          if [ -z "$IS_PROD_ENV" ]; then
+            PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^)
+            echo "Previous tag: $PREVIOUS_TAG"
+          else
+            PREVIOUS_TAG=$(git describe --tags --abbrev=0 origin/HEAD^)
+            echo "Previous tag: $PREVIOUS_TAG"
+          fi
+      
+      - name: Check if previous release tag exists
+        run: |
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "Previous release tag does not exist. Rollback aborted."
+            exit 1
+          else
+            echo "Previous release tag exists: $PREVIOUS_TAG"
+          fi
       
       - name: Rollback to previous release
         run: |
-          git checkout env/prod
-          git reset --hard $PREVIOUS_TAG
-          git push --force origin env/prod
+          if [ -z "$IS_PROD_ENV" ]; then
+            git checkout env/prod
+            git reset --hard $PREVIOUS_TAG
+            git push --force origin env/prod
+          fi
