@@ -1,0 +1,23 @@
+name: Rollback
+
+on:
+  workflow_dispatch: # éËìÆÇ≈ÇÃÉgÉäÉKÅ[
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      
+      - name: Get previous release tag
+        run: |
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^)
+          echo "Previous tag: $PREVIOUS_TAG"
+      
+      - name: Rollback to previous release
+        run: |
+          git checkout env/prod
+          git reset --hard $PREVIOUS_TAG
+          git push --force origin env/prod
