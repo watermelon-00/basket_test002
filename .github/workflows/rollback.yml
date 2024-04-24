@@ -16,16 +16,15 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Get commit hash of target tag
-  run: |
-    if [ -z "$IS_PROD_ENV" ]; then
-      COMMIT_TARGET=$(git show --pretty=format:%H --no-patch stg-v2.0)
-      echo "Commit hash of stg-v2.0 tag: $COMMIT_TARGET"
-    else
-      COMMIT_TARGET=$(git show --pretty=format:%H --no-patch origin/stg-v2.0)
-      echo "Commit hash of stg-v2.0 tag: $COMMIT_TARGET"
-    fi
-  shell: /usr/bin/bash -ex
-
+        run: |
+          if [ -z "$IS_PROD_ENV" ]; then
+          COMMIT_TARGET=$(git show --pretty=format:%H --no-patch stg-v2.0)
+          echo "Commit hash of stg-v2.0 tag: $COMMIT_TARGET"
+          else
+          COMMIT_TARGET=$(git show --pretty=format:%H --no-patch origin/stg-v2.0)
+          echo "Commit hash of stg-v2.0 tag: $COMMIT_TARGET"
+          fi
+          echo "COMMIT_TARGET value: $COMMIT_TARGET"
       
       - name: Get commit hash of environment branch
         run: |
@@ -36,7 +35,8 @@ jobs:
             COMMIT_ENV=$(git show --pretty=format:%H --no-patch origin/$ENV_BRANCH)
             echo "Commit hash of $ENV_BRANCH branch: $COMMIT_ENV"
           fi
-      
+          echo "COMMIT_ENV value: $COMMIT_ENV"
+
       - name: Verify if commit hashes match
         run: |
           if [ "$COMMIT_TARGET" != "$COMMIT_ENV_STG" ]; then
@@ -55,6 +55,7 @@ jobs:
             PREVIOUS_TAG=$(git describe --tags --abbrev=0 origin/HEAD^)
             echo "Previous tag: $PREVIOUS_TAG"
           fi
+          echo "PREVIOUS_TAG value: $PREVIOUS_TAG"
       
       - name: Check if previous release tag exists
         run: |
