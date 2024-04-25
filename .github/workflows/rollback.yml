@@ -6,6 +6,14 @@ on:
       target_tag:
         description: 'ターゲットとなるタグ名'
         required: true
+      MODE:
+        required: true
+        description: 実行モード standard/test
+        type: choise
+        options:
+         - standard
+         - test
+        default: standard
 
 jobs:
   rollback:
